@@ -1,3 +1,4 @@
+from collections import deque
 from typing import Dict, List
 
 import numpy as np
@@ -20,8 +21,11 @@ def train_dqn(
 
     logs: List[Dict[str, float]] = []
     total_steps = 0
+    reward_window: deque = deque(maxlen=100)
+    waiting_window: deque = deque(maxlen=100)
 
     for episode in range(1, episodes + 1):
+        agent.set_epsilon_for_episode(episode=episode, total_episodes=episodes)
         state = env.reset()
         done = False
         episode_reward = 0.0
@@ -41,10 +45,17 @@ def train_dqn(
             total_steps += 1
 
         avg_waiting = float(np.mean(waiting_values)) if waiting_values else 0.0
+        reward_window.append(float(episode_reward))
+        waiting_window.append(avg_waiting)
+        moving_avg_reward = float(np.mean(reward_window))
+        moving_avg_waiting = float(np.mean(waiting_window))
+
         log_row = {
             "episode": float(episode),
             "episode_reward": float(episode_reward),
             "average_waiting_cars": avg_waiting,
+            "moving_avg_reward_100": moving_avg_reward,
+            "moving_avg_waiting_100": moving_avg_waiting,
             "epsilon": float(agent.epsilon),
             "buffer_size": float(len(replay_buffer)),
             "total_steps": float(total_steps),
@@ -54,6 +65,7 @@ def train_dqn(
         if episode % 50 == 0:
             print(
                 f"episode={episode} reward={episode_reward:.3f} avg_waiting={avg_waiting:.3f} "
+                f"ma100_reward={moving_avg_reward:.3f} ma100_waiting={moving_avg_waiting:.3f} "
                 f"epsilon={agent.epsilon:.3f} buffer={len(replay_buffer)}"
             )
 
