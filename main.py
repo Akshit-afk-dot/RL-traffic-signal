@@ -17,7 +17,6 @@ LIGHT_SWITCH_MS = 5000
 
 @dataclass
 class Road:
-
     x: int
     y: int
     width: int
@@ -29,7 +28,6 @@ class Road:
 
 
 class TrafficLight:
-
     RED = "RED"
     GREEN = "GREEN"
 
@@ -156,12 +154,14 @@ class TrafficEnv:
         pygame.display.flip()
 
     def get_state(self):
+
         return {
             "light_state": self.light.get_state(),
             "num_cars": len(self.cars),
         }
 
     def step(self, actions=None):
+
         self.update()
         self.render()
         reward = 0.0
@@ -170,6 +170,7 @@ class TrafficEnv:
         return self.get_state(), reward, done, info
 
     def reset(self):
+
         self.cars.clear()
         self.light = TrafficLight()
         self.last_spawn_ms = pygame.time.get_ticks()
