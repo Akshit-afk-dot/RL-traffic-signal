@@ -23,9 +23,10 @@ def train_dqn(
     total_steps = 0
     reward_window: deque = deque(maxlen=100)
     waiting_window: deque = deque(maxlen=100)
+    loss_window: deque = deque(maxlen=100)
 
     for episode in range(1, episodes + 1):
-        agent.set_epsilon_for_episode(episode=episode, total_episodes=episodes)
+        agent.set_epsilon_for_episode(episode=episode, total_episodes=episodes, decay_portion=0.9)
         state = env.reset()
         done = False
         episode_reward = 0.0
@@ -40,7 +41,9 @@ def train_dqn(
             waiting_values.append(float(info["average_waiting_cars"]))
 
             if len(replay_buffer) >= max(batch_size, warmup_steps):
-                agent.train_step(replay_buffer, batch_size)
+                loss = agent.train_step(replay_buffer, batch_size)
+                if loss > 0.0:
+                    loss_window.append(loss)
 
             total_steps += 1
 
@@ -49,6 +52,7 @@ def train_dqn(
         waiting_window.append(avg_waiting)
         moving_avg_reward = float(np.mean(reward_window))
         moving_avg_waiting = float(np.mean(waiting_window))
+        moving_avg_loss = float(np.mean(loss_window)) if loss_window else 0.0
 
         log_row = {
             "episode": float(episode),
@@ -56,6 +60,7 @@ def train_dqn(
             "average_waiting_cars": avg_waiting,
             "moving_avg_reward_100": moving_avg_reward,
             "moving_avg_waiting_100": moving_avg_waiting,
+            "moving_avg_loss_100": moving_avg_loss,
             "epsilon": float(agent.epsilon),
             "buffer_size": float(len(replay_buffer)),
             "total_steps": float(total_steps),
@@ -66,7 +71,7 @@ def train_dqn(
             print(
                 f"episode={episode} reward={episode_reward:.3f} avg_waiting={avg_waiting:.3f} "
                 f"ma100_reward={moving_avg_reward:.3f} ma100_waiting={moving_avg_waiting:.3f} "
-                f"epsilon={agent.epsilon:.3f} buffer={len(replay_buffer)}"
+                f"ma100_loss={moving_avg_loss:.4f} epsilon={agent.epsilon:.3f} buffer={len(replay_buffer)}"
             )
 
     env.close()
