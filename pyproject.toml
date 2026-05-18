@@ -1,0 +1,26 @@
+[project]
+name = "reinforcement-learning-based-adaptive-traffic-signal-control-system"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "gymnasium>=1.2.3",
+    "matplotlib>=3.10.8",
+    "numpy>=2.4.3",
+    "pandas>=3.0.1",
+    "pydantic>=2.12.5",
+    "pygame>=2.6.1",
+    "requests>=2.32.5",
+    "rich>=14.3.3",
+    "setuptools>=82.0.1",
+    "stable-baselines3>=2.7.1",
+    "tensorboard>=2.20.0",
+    "torch>=2.10.0",
+    "tqdm>=4.67.3",
+]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["simulation*", "env*", "rl*", "utils*", "visualization*"]
+[tool.ruff]
+line-length = 120
